@@ -1,4 +1,4 @@
-FROM frolvlad/alpine-glibc:alpine-3.5
+FROM lga-registry01.pulse.prod:5000/frolvlad/alpine-glibc:alpine-3.5
 
 RUN apk add --no-cache --virtual=build-dependencies curl ca-certificates && \
     mkdir -p /usr/java && \
