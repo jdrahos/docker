@@ -1,0 +1,50 @@
+# my global config
+global:
+  scrape_interval:     15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+  evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
+  # scrape_timeout is set to the global default (10s).
+
+  # Attach these labels to any time series or alerts when communicating with
+  # external systems (federation, remote storage, Alertmanager).
+  external_labels:
+      monitor: 'codelab-monitor'
+
+# Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
+rule_files:
+  # - "first.rules"
+  # - "second.rules"
+
+# A scrape configuration containing exactly one endpoint to scrape:
+# Here it's Prometheus itself.
+scrape_configs:
+  # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
+  - job_name: 'prometheus'
+
+    # metrics_path defaults to '/metrics'
+    # scheme defaults to 'http'.
+
+    static_configs:
+      - targets: ['localhost:9090']
+  - job_name: 'marathon'
+    static_configs:
+      - targets: ['marathon-exporter.monitoring.marathon.ex-mesos.lga:10001']
+  
+  - job_name: 'marathon_discovery'
+    # List of Marathon service discovery configurations.
+    marathon_sd_configs:
+      # List of URLs to be used to contact Marathon servers.
+      # You need to provide at least one server URL, but should provide URLs for
+      # all masters you have running.
+      - servers:
+          - http://lga-emm00.pulse.prod:8080
+          - http://lga-emm01.pulse.prod:8080
+          - http://lga-emm02.pulse.prod:8080
+
+    relabel_configs:
+      - source_labels: [__meta_marathon_app_label_prometheus_scrape]
+        action: keep
+        regex: true
+      - source_labels: [__meta_marathon_app_label_prometheus_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
